@@ -1,7 +1,16 @@
 pyTodo
 ------
 
-This is a simple todo-list app in python. It uses the [curses](http://docs.python.org/2/library/curses.html) module, so you will have the best chance of it running if you're on a UNIX system.
+This is a simple todo-list app in python. It uses the [curses](http://docs.python.org/3/library/curses.html) module, so you will have the best chance of it running if you're on a UNIX system.
+
+![pyTodo screen capture](pyTodo.png)
+
+Usage
+=====
+
+```bash
+python3 main.py
+```
 
 Controls
 ========
