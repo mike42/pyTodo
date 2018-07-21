@@ -1,6 +1,10 @@
 import curses
 import locale
-import ListBackend
+locale.setlocale(locale.LC_ALL, '')
+
+from curses import wrapper
+
+from . import ListBackend
 
 # Get a string with an input box
 def inpbox(scr, prompt):
@@ -8,12 +12,13 @@ def inpbox(scr, prompt):
     scr.refresh()
 
     # Parent window
-    width = 42; height = 5
-    top = (curses.LINES - height) / 2
-    left = (curses.COLS - width) / 2
+    width = 42
+    height = 5
+    top = (curses.LINES - height) // 2
+    left = (curses.COLS - width) // 2
     box = curses.newwin(height, width, top, left)
     box.bkgd(curses.color_pair(1))
-    box.border('|', '|', '-', '-', '+', '+', '+', '+')
+    box.border()
     box.addstr(1, 2, prompt)
     box.refresh()
 
@@ -23,7 +28,7 @@ def inpbox(scr, prompt):
     txt.refresh()
     txt.keypad(1)
     curses.echo()
-    new = txt.getstr()
+    new = txt.getstr().decode('UTF-8')
     curses.noecho()
 
     scr.clear()
@@ -31,7 +36,7 @@ def inpbox(scr, prompt):
     return new
 
 # Print the contents of a list in a box
-def showList(scr, todo, selected):
+def show_list(scr, todo, selected):
     scr.clear()
     scr.refresh()
 
@@ -40,16 +45,16 @@ def showList(scr, todo, selected):
         height = 1
     if height > curses.LINES:
         height = curses.LINES - 2
-    top = (curses.LINES - height) / 2
-    left = (curses.COLS - width) / 2
+    top = (curses.LINES - height) // 2
+    left = (curses.COLS - width) // 2
     win = curses.newwin(height + 2, width + 2, top - 1, left - 1)
     win.bkgd(curses.color_pair(1))
-    win.border('|', '|', '-', '-', '+', '+', '+', '+')
+    win.border()
 
     if todo.lst:
         for i in range(height):
             line = " " + str(i + 1) + ". " + todo.lst[i]
-            if(len(line) < width):
+            if len(line) < width:
                 line = line + ' ' * (width - len(line))
             else:
                 line = line[:width-3] + "..."
@@ -60,7 +65,6 @@ def showList(scr, todo, selected):
     else:
         win.addstr(1, 1," < The todo list is empty! >")
     win.refresh()
-    scr.move(curses.LINES - 1, curses.COLS - 1)
     scr.refresh()
     win.keypad(1)
     char = win.getch()
@@ -70,12 +74,17 @@ def showList(scr, todo, selected):
 #todo: Help bar, cmd argument for file, clear method
 
 def run():
+    try:
+        wrapper(run_curses)
+    except KeyboardInterrupt as _:
+        exit(0)
+
+def run_curses(scr):
     # Empty list
     todo = ListBackend.ListBackend()
     todo.load("default.txt")
 
     # Initialise
-    scr = curses.initscr()
     curses.start_color()
 
     # Colour pairs
@@ -96,7 +105,7 @@ def run():
     modified = 0
 
     while 1:
-        c = showList(scr, todo, selected)
+        c = show_list(scr, todo, selected)
 
         if c == ord('q'):
             if modified == 1:
@@ -108,28 +117,22 @@ def run():
             new = inpbox(scr, "New item")
             old = len(todo.lst)
             todo.append(new)
-            if(len(todo.lst) != old):
+            if len(todo.lst) != old:
                 modified = 1
         elif c == ord('-'):
             old = len(todo.lst)
-            todo.delByIndex(selected)
-            if(selected >= len(todo.lst)):
+            todo.del_by_index(selected)
+            if selected >= len(todo.lst):
                 selected = len(todo.lst) - 1
-            if(len(todo.lst) != old):
+            if len(todo.lst) != old:
              modified = 1
         elif c == curses.KEY_UP:
             if selected == -1:
                 selected = len(todo.lst)
             selected = selected - 1
-            if(selected < 0):
+            if selected < 0:
                 selected = 0
         elif c == curses.KEY_DOWN:
             selected = selected + 1
-            if(selected >= len(todo.lst)):
+            if selected >= len(todo.lst):
                 selected = len(todo.lst) - 1
-
-
-    curses.nocbreak()
-    scr.keypad(0)
-    curses.echo()
-    curses.endwin()

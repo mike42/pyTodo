@@ -1,31 +1,31 @@
 class ListBackend(object):
-    """ Class to help manage the todo-list data structure in an array
     """
-
+    Class to help manage the todo-list data structure in an array
+    """
     def __init__(self):
         self.lst = []
         self.fname = None
 
     def load(self, fname):
         self.fname = fname
-        with open(fname) as f:
+        with open(fname, 'r') as f:
             for line in f:
                 self.append(line)
 
     def save(self):
         if self.fname is None:
-            return;
+            return
         with open(self.fname, 'w') as f:
             for line in self.lst:
                 f.write(line + "\n")
-        
-    def delByIndex(self, index):
-        if(index < 0):
+
+    def del_by_index(self, index):
+        if index < 0:
             # Too small. Ignore
-            return;
-        if(index >= len(self.lst)):
+            return
+        if index >= len(self.lst):
             # Too large. Ignore
-            return;
+            return
         del self.lst[index]
 
     def append(self, item):
